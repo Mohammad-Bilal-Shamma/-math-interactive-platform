@@ -1,6 +1,12 @@
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import {
+  InsertUser,
+  questionAttempts,
+  studentLessonProgress,
+  studentUnitProgress,
+  users,
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +95,114 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function getStudentLearningProgress(userId: number) {
+  const db = await getDb();
+  if (!db) return { units: [], lessons: [], recentAttempts: [] };
+
+  const [units, lessons, recentAttempts] = await Promise.all([
+    db.select().from(studentUnitProgress).where(eq(studentUnitProgress.userId, userId)),
+    db.select().from(studentLessonProgress).where(eq(studentLessonProgress.userId, userId)),
+    db
+      .select()
+      .from(questionAttempts)
+      .where(eq(questionAttempts.userId, userId))
+      .orderBy(sql`${questionAttempts.createdAt} desc`)
+      .limit(12),
+  ]);
+
+  return { units, lessons, recentAttempts };
+}
+
+export async function recordLessonProgress(input: {
+  userId: number;
+  unitId: string;
+  lessonId: string;
+  isCompleted: boolean;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+
+  const existing = await db
+    .select()
+    .from(studentLessonProgress)
+    .where(and(eq(studentLessonProgress.userId, input.userId), eq(studentLessonProgress.lessonId, input.lessonId)))
+    .limit(1);
+  const shouldIncreaseCompleted = input.isCompleted && existing[0]?.isCompleted !== 1;
+
+  await db
+    .insert(studentLessonProgress)
+    .values({
+      userId: input.userId,
+      unitId: input.unitId,
+      lessonId: input.lessonId,
+      isCompleted: input.isCompleted ? 1 : 0,
+      lastViewedAt: new Date(),
+    })
+    .onDuplicateKeyUpdate({
+      set: {
+        isCompleted: input.isCompleted ? 1 : existing[0]?.isCompleted ?? 0,
+        lastViewedAt: new Date(),
+      },
+    });
+
+  await db
+    .insert(studentUnitProgress)
+    .values({
+      userId: input.userId,
+      unitId: input.unitId,
+      completedLessons: shouldIncreaseCompleted ? 1 : 0,
+      lastLessonId: input.lessonId,
+    })
+    .onDuplicateKeyUpdate({
+      set: {
+        completedLessons: shouldIncreaseCompleted
+          ? sql`${studentUnitProgress.completedLessons} + 1`
+          : sql`${studentUnitProgress.completedLessons}`,
+        lastLessonId: input.lessonId,
+        updatedAt: new Date(),
+      },
+    });
+}
+
+export async function recordQuestionAttempt(input: {
+  userId: number;
+  unitId: string;
+  lessonId: string;
+  questionId: string;
+  isCorrect: boolean;
+  scorePercent: number;
+  answerJson?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+
+  await db.insert(questionAttempts).values({
+    userId: input.userId,
+    unitId: input.unitId,
+    lessonId: input.lessonId,
+    questionId: input.questionId,
+    isCorrect: input.isCorrect ? 1 : 0,
+    scorePercent: input.scorePercent,
+    answerJson: input.answerJson,
+  });
+
+  await db
+    .insert(studentUnitProgress)
+    .values({
+      userId: input.userId,
+      unitId: input.unitId,
+      correctAnswers: input.isCorrect ? 1 : 0,
+      attempts: 1,
+      lastLessonId: input.lessonId,
+    })
+    .onDuplicateKeyUpdate({
+      set: {
+        correctAnswers: input.isCorrect
+          ? sql`${studentUnitProgress.correctAnswers} + 1`
+          : sql`${studentUnitProgress.correctAnswers}`,
+        attempts: sql`${studentUnitProgress.attempts} + 1`,
+        lastLessonId: input.lessonId,
+        updatedAt: new Date(),
+      },
+    });
+}
