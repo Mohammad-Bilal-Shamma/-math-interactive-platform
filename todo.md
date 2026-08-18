@@ -69,3 +69,11 @@
 - [x] Connect the GitHub repository to Vercel and configure the confirmed Clerk production and preview variables.
 - [x] Redeploy the project to Vercel and validate that the public production homepage renders.
 - [ ] Configure an external database, session secret, AI provider, and image storage before validating authenticated API routes on Vercel.
+- [x] Create an Aiven MySQL free service and obtain a secure MySQL connection URL.
+- [x] Add the Aiven connection and a production session secret to Vercel environment variables.
+- [ ] Apply the existing Drizzle schema to Aiven MySQL and verify protected data persistence.
+- [ ] Replace Manus-only image storage and AI runtime dependencies with Vercel-compatible services.
+- [x] Update the MySQL runtime adapter to enforce Aiven-compatible TLS connections on Vercel.
+- [x] Generate and store a production `JWT_SECRET` in Vercel without committing it to the repository.
+- [x] Apply the corrected Drizzle migration sequence to Aiven and verify all 11 application tables are present.
+- [ ] Redeploy Vercel and validate Clerk-authenticated progress and teacher data persistence against Aiven.

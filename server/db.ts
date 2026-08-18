@@ -1,5 +1,6 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import type { PoolOptions } from "mysql2";
 import { nanoid } from "nanoid";
 import {
   InsertUser,
@@ -17,11 +18,31 @@ import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
+export function buildDatabaseConnection(databaseUrl: string): string | PoolOptions {
+  const parsed = new URL(databaseUrl);
+  const requiresTls = parsed.hostname.endsWith(".aivencloud.com") || parsed.searchParams.get("ssl-mode")?.toUpperCase() === "REQUIRED";
+
+  if (!requiresTls) return databaseUrl;
+
+  return {
+    host: parsed.hostname,
+    port: Number(parsed.port || 3306),
+    user: decodeURIComponent(parsed.username),
+    password: decodeURIComponent(parsed.password),
+    database: parsed.pathname.replace(/^\//, "") || undefined,
+    // Aiven requires an encrypted channel. A CA can be supplied later through DATABASE_SSL_CA
+    // to upgrade this to full certificate verification without changing application code.
+    ssl: process.env.DATABASE_SSL_CA
+      ? { ca: process.env.DATABASE_SSL_CA.replace(/\\n/g, "\n"), rejectUnauthorized: true }
+      : { rejectUnauthorized: false },
+  };
+}
+
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      _db = drizzle({ connection: buildDatabaseConnection(process.env.DATABASE_URL) });
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;

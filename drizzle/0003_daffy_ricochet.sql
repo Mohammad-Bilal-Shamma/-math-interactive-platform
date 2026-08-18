@@ -1,5 +1,4 @@
 ALTER TABLE `learning_lessons` ADD `summary` text;--> statement-breakpoint
-ALTER TABLE `learning_lessons` ADD `summary` text;--> statement-breakpoint
 ALTER TABLE `learning_lessons` ADD `contentJson` text;--> statement-breakpoint
 ALTER TABLE `learning_lessons` ADD `visualizationType` varchar(48);--> statement-breakpoint
 ALTER TABLE `learning_lessons` ADD `visualizationConfigJson` text;--> statement-breakpoint
