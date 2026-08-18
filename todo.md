@@ -39,3 +39,7 @@
 - [x] Verify the enhanced motion on desktop and mobile, including the reduced-motion fallback.
 - [x] Re-check the post-animation lesson and visual-laboratory layouts on a mobile viewport.
 - [x] Add an automated check that the reduced-motion CSS disables non-essential transitions and keyframe animations.
+- [x] Add a lightweight accessible celebration overlay when an authenticated student completes every lesson in a unit.
+- [x] Add restrained confetti motion, unit-completion feedback, and a next-step action with a reduced-motion fallback.
+- [x] Test the completion celebration trigger and responsive display without interrupting learning progress persistence.
+- [x] Verify that the celebration eligibility is evaluated only within the successful lesson-persistence callback path.

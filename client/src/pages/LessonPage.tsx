@@ -1,10 +1,12 @@
 import { ArrowLeft, BookOpenCheck, CheckCircle2, ChevronLeft, CircleHelp, ListChecks } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { LearningShell } from "@/components/LearningShell";
 import { MathFormula } from "@/components/MathFormula";
 import { QuestionPanel } from "@/components/QuestionPanel";
+import { UnitCompletionCelebration } from "@/components/UnitCompletionCelebration";
+import { shouldCelebrateUnitCompletion } from "@shared/completionCelebration";
 import { learningUnits } from "@shared/learningContent";
 import { trpc } from "@/lib/trpc";
 
@@ -15,14 +17,26 @@ export default function LessonPage() {
   const { isAuthenticated } = useAuth();
   const { data: progress } = trpc.learning.progress.useQuery(undefined, { enabled: isAuthenticated });
   const utils = trpc.useUtils();
-  const markCompleted = trpc.learning.recordLessonProgress.useMutation({ onSuccess: () => utils.learning.progress.invalidate() });
+  const markCompleted = trpc.learning.recordLessonProgress.useMutation();
   const { mutate: recordReview } = trpc.learning.recordLessonProgress.useMutation();
+  const [showCelebration, setShowCelebration] = useState(() =>
+    import.meta.env.DEV && typeof window !== "undefined" && new URLSearchParams(window.location.search).has("celebrate"),
+  );
 
   if (!unit || !lesson) return <LearningShell><div className="empty-state page-width"><h1>لم نعثر على هذا الدرس.</h1><Link href="/">العودة للرئيسية</Link></div></LearningShell>;
   const questions = unit.questions.filter(question => question.lessonId === lesson.id);
   const isCompleted = progress?.lessons.some(item => item.lessonId === lesson.id && item.isCompleted === 1) ?? false;
   const currentIndex = unit.lessons.findIndex(item => item.id === lesson.id);
   const nextLesson = unit.lessons[currentIndex + 1];
+  const shouldCelebrate = useMemo(
+    () => shouldCelebrateUnitCompletion({
+      lessonIds: unit.lessons.map(item => item.id),
+      completedLessonIds: progress?.lessons.filter(item => item.unitId === unit.id && item.isCompleted === 1).map(item => item.lessonId) ?? [],
+      currentLessonId: lesson.id,
+      persistenceSucceeded: true,
+    }),
+    [lesson.id, progress?.lessons, unit.id, unit.lessons],
+  );
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -31,11 +45,15 @@ export default function LessonPage() {
   }, [isAuthenticated, lesson.id, recordReview, unit.id]);
 
   const completeLesson = () => {
-    if (isAuthenticated) markCompleted.mutate({ unitId: unit.id, lessonId: lesson.id, isCompleted: true });
+    if (isAuthenticated) markCompleted.mutate(
+      { unitId: unit.id, lessonId: lesson.id, isCompleted: true },
+      { onSuccess: () => { utils.learning.progress.invalidate(); if (shouldCelebrate) setShowCelebration(true); } },
+    );
   };
 
   return (
     <LearningShell>
+      {showCelebration && <UnitCompletionCelebration unitTitle={unit.title} unitHref={`/units/${unit.slug}`} onDismiss={() => setShowCelebration(false)} />}
       <section className="lesson-banner page-width">
         <Link href={`/units/${unit.slug}`} className="back-link"><ChevronLeft size={17} /> {unit.title}</Link>
         <div className="lesson-banner__meta"><span>{lesson.kicker}</span><span>الوحدة ٠{unit.order}</span></div>

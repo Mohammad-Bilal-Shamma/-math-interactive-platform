@@ -9,5 +9,6 @@ describe("motion accessibility", () => {
     expect(css).toMatch(/\.feedback--enter[\s\S]*?animation:\s*none/);
     expect(css).toMatch(/\.visualizer__canvas[\s\S]*?animation:\s*none/);
     expect(css).toMatch(/\.question-panel[\s\S]*?transition:\s*none/);
+    expect(css).toMatch(/\.celebration-confetti\s*\{\s*display:\s*none/);
   });
 });
