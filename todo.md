@@ -65,3 +65,7 @@
 - [x] Test message persistence, student isolation, restoration, and responsive presentation.
 - [x] Verify the linked GitHub remote and repository working tree before synchronization.
 - [x] Commit the completed project changes and push the current branch to GitHub.
+- [x] Verify Vercel build readiness and document the external runtime dependencies required for a functional deployment.
+- [x] Connect the GitHub repository to Vercel and configure the confirmed Clerk production and preview variables.
+- [x] Redeploy the project to Vercel and validate that the public production homepage renders.
+- [ ] Configure an external database, session secret, AI provider, and image storage before validating authenticated API routes on Vercel.
