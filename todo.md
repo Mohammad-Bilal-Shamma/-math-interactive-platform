@@ -19,7 +19,7 @@
 - [x] Save a reviewed project checkpoint after the complete first implementation is tested.
 - [x] Save lesson review activity when an authenticated student revisits a lesson or its solved example.
 - [x] Show the attempt count directly in each unit row on the results page.
-- [ ] Export the reviewed project checkpoint to the user's GitHub account and verify repository creation.
+- [x] GitHub export attempt documented as blocked by a 403 write-permission error; the user requested a Vercel-ready source delivery instead.
 - [x] Package and deliver the complete project source as a downloadable archive.
 - [x] Review the current server architecture against Vercel’s serverless deployment model.
 - [x] Add Vercel-compatible API entry points and deployment configuration without changing the Manus development workflow.
