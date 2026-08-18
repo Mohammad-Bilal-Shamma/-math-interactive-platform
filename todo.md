@@ -51,3 +51,6 @@
 - [x] Add a concise structured recap to each of the ten source-derived lessons.
 - [x] Display each lesson recap with key idea, essential formula or procedure, and mastery takeaway.
 - [x] Verify recap coverage, readability, and responsive presentation across lesson pages.
+- [x] Add an accessible toggle to collapse and expand each lesson recap.
+- [x] Preserve a useful recap preview and optimize the toggle layout for narrow mobile screens.
+- [x] Test recap toggle state, keyboard semantics, and responsive presentation.

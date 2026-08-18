@@ -11,5 +11,17 @@ describe("LessonRecap", () => {
     expect(markup).toContain("الفكرة الأساسية للاختبار.");
     expect(markup).toContain("القانون أو الإجراء الأهم");
     expect(markup).toContain("إتقان قراءة القانون وتطبيقه.");
+    expect(markup).toContain('type="button"');
+    expect(markup).toContain('aria-expanded="true"');
+    expect(markup).toContain("طي الملخص");
+  });
+
+  it("exposes an accessible collapsed state that preserves the key-idea preview", () => {
+    const markup = renderToStaticMarkup(<LessonRecap initiallyExpanded={false} recap={{ keyIdea: "معاينة الفكرة الأساسية.", coreFormula: "h=x_{i+1}-x_i", masteryTakeaway: "إتقان الإجراء." }} />);
+
+    expect(markup).toContain('aria-expanded="false"');
+    expect(markup).toContain("توسيع الملخص");
+    expect(markup).toContain("معاينة الفكرة الأساسية.");
+    expect(markup).toContain("hidden=\"\"");
   });
 });
