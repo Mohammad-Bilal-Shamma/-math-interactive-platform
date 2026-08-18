@@ -1,0 +1,23 @@
+# Project TODO
+
+- [x] Define shared TypeScript models for the five numerical-methods units, lessons, examples, questions, and step feedback.
+- [x] Add database tables for units, lessons, questions, solved examples, student progress, question attempts, and per-unit statistics.
+- [x] Apply the database schema migration and expose typed tRPC procedures for learning content, progress, attempts, and results.
+- [x] Add deterministic Vitest coverage for numerical tolerance checks, multi-step grading, progress aggregation, and result statistics.
+- [x] Configure the application shell for Arabic language, RTL direction, responsive navigation, and accessible focus behavior.
+- [x] Apply the Scandinavian visual system with pale cool-gray surfaces, black bold headings, delicate subtitles, and restrained pastel-blue and blush-pink geometric accents.
+- [x] Add KaTeX-based rendering for all educational formulas, equations, and structured mathematical notation.
+- [x] Create the student home page with unit overview, overall progress, latest learning activity, and links to review lessons.
+- [x] Create a unit page with lessons, solved examples, practice access, and per-unit progress indicators for all five source-file units.
+- [x] Create the lesson experience with theory, formulas, source-derived solved examples, step navigation, and persistent review access.
+- [x] Add numeric-input questions with tolerance-aware feedback, mistake explanation, and correct-step reveal.
+- [x] Add multiple-choice, table-fill, and multi-step question components with immediate per-step feedback.
+- [x] Seed the initial five units with concise educational content and representative solved examples derived only from the five supplied lesson files.
+- [x] Persist authenticated student lesson completion, question attempts, scores, and review state in the database.
+- [x] Create a results and statistics page showing correctness percentage by unit, attempts, completed lessons, and overall progress.
+- [x] Verify desktop and mobile layouts visually and test keyboard navigation, RTL layout, equation rendering, persistence, and feedback states.
+- [x] Save a reviewed project checkpoint after the complete first implementation is tested.
+- [x] Save lesson review activity when an authenticated student revisits a lesson or its solved example.
+- [x] Show the attempt count directly in each unit row on the results page.
+- [ ] Export the reviewed project checkpoint to the user's GitHub account and verify repository creation.
+- [ ] Package and deliver the complete project source as a downloadable archive.
