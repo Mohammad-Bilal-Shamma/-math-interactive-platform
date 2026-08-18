@@ -3,6 +3,8 @@ import { Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { LearningShell } from "@/components/LearningShell";
 import { MathFormula } from "@/components/MathFormula";
+import { StreakCard } from "@/components/StreakCard";
+import "@/streak.css";
 import { learningUnits } from "@shared/learningContent";
 import { trpc } from "@/lib/trpc";
 
@@ -49,6 +51,7 @@ export default function Home() {
           </article>
           <article className="quick-card"><BookMarked size={20} /><div><span>الدرس التالي</span><strong>{learningUnits[0].lessons[0].title}</strong></div><Link href="/units/errors-rounding/lessons/rounding-rules" aria-label="فتح الدرس التالي"><ArrowLeft size={18} /></Link></article>
           <article className="quick-card"><CircleGauge size={20} /><div><span>نمط الدراسة</span><strong>تعلم · طبّق · راجع</strong></div></article>
+          <StreakCard currentStreak={progress?.streak.currentStreak ?? 0} longestStreak={progress?.streak.longestStreak ?? 0} isAuthenticated={isAuthenticated} />
         </div>
       </section>
 

@@ -6,10 +6,12 @@ import {
   learningLessons,
   learningQuestions,
   questionAttempts,
+  studentDailyStreaks,
   studentLessonProgress,
   studentUnitProgress,
   users,
 } from "../drizzle/schema";
+import { advanceDailyStreak, utcDayKey } from "../shared/dailyStreak";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -98,11 +100,47 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getStudentDailyStreak(userId: number) {
+  const db = await getDb();
+  if (!db) return { currentStreak: 0, longestStreak: 0, lastActiveDate: null };
+
+  const result = await db.select().from(studentDailyStreaks).where(eq(studentDailyStreaks.userId, userId)).limit(1);
+  const streak = result[0];
+  return streak
+    ? { currentStreak: streak.currentStreak, longestStreak: streak.longestStreak, lastActiveDate: streak.lastActiveDate }
+    : { currentStreak: 0, longestStreak: 0, lastActiveDate: null };
+}
+
+export async function recordDailyActivity(userId: number, now = new Date()) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+
+  const current = await getStudentDailyStreak(userId);
+  const next = advanceDailyStreak(current, utcDayKey(now));
+  if (next === current) return next;
+
+  await db.insert(studentDailyStreaks).values({
+    userId,
+    currentStreak: next.currentStreak,
+    longestStreak: next.longestStreak,
+    lastActiveDate: next.lastActiveDate,
+  }).onDuplicateKeyUpdate({
+    set: {
+      currentStreak: next.currentStreak,
+      longestStreak: next.longestStreak,
+      lastActiveDate: next.lastActiveDate,
+      updatedAt: new Date(),
+    },
+  });
+
+  return next;
+}
+
 export async function getStudentLearningProgress(userId: number) {
   const db = await getDb();
-  if (!db) return { units: [], lessons: [], recentAttempts: [] };
+  if (!db) return { units: [], lessons: [], recentAttempts: [], streak: { currentStreak: 0, longestStreak: 0, lastActiveDate: null } };
 
-  const [units, lessons, recentAttempts] = await Promise.all([
+  const [units, lessons, recentAttempts, streak] = await Promise.all([
     db.select().from(studentUnitProgress).where(eq(studentUnitProgress.userId, userId)),
     db.select().from(studentLessonProgress).where(eq(studentLessonProgress.userId, userId)),
     db
@@ -111,9 +149,10 @@ export async function getStudentLearningProgress(userId: number) {
       .where(eq(questionAttempts.userId, userId))
       .orderBy(sql`${questionAttempts.createdAt} desc`)
       .limit(12),
+    getStudentDailyStreak(userId),
   ]);
 
-  return { units, lessons, recentAttempts };
+  return { units, lessons, recentAttempts, streak };
 }
 
 export async function recordLessonProgress(input: {
@@ -165,6 +204,8 @@ export async function recordLessonProgress(input: {
         updatedAt: new Date(),
       },
     });
+
+  await recordDailyActivity(input.userId);
 }
 
 export async function recordQuestionAttempt(input: {
@@ -207,7 +248,9 @@ export async function recordQuestionAttempt(input: {
         lastLessonId: input.lessonId,
         updatedAt: new Date(),
       },
-  });
+    });
+
+  await recordDailyActivity(input.userId);
 }
 
 export type TeacherQuestionInput = {

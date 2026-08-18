@@ -23,6 +23,7 @@ export const appRouter = router({
   learning: router({
     catalog: publicProcedure.query(() => catalogUnits),
     progress: protectedProcedure.query(({ ctx }) => learningDb.getStudentLearningProgress(ctx.user.id)),
+    streak: protectedProcedure.query(({ ctx }) => learningDb.getStudentDailyStreak(ctx.user.id)),
     statistics: protectedProcedure.query(async ({ ctx }) => {
       const progress = await learningDb.getStudentLearningProgress(ctx.user.id);
 

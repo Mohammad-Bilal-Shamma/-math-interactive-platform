@@ -43,3 +43,8 @@
 - [x] Add restrained confetti motion, unit-completion feedback, and a next-step action with a reduced-motion fallback.
 - [x] Test the completion celebration trigger and responsive display without interrupting learning progress persistence.
 - [x] Verify that the celebration eligibility is evaluated only within the successful lesson-persistence callback path.
+- [x] Define daily streak rules for same-day activity, consecutive days, and broken streak recovery.
+- [x] Add persistent student streak fields and a server-side activity update procedure.
+- [x] Update lesson and question activity flows to maintain the streak without duplicate same-day increments.
+- [x] Add a responsive streak card with daily encouragement and progress cues on student-facing pages.
+- [x] Add deterministic tests for streak calculations, persistence updates, and UI rendering.

@@ -113,3 +113,16 @@ export const questionAttempts = mysqlTable("question_attempts", {
   answerJson: text("answerJson"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
+
+export const studentDailyStreaks = mysqlTable(
+  "student_daily_streaks",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    currentStreak: int("currentStreak").notNull().default(0),
+    longestStreak: int("longestStreak").notNull().default(0),
+    lastActiveDate: varchar("lastActiveDate", { length: 10 }),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("student_daily_streak_user_unique").on(table.userId)],
+);
