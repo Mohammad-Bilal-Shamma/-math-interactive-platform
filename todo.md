@@ -48,3 +48,6 @@
 - [x] Update lesson and question activity flows to maintain the streak without duplicate same-day increments.
 - [x] Add a responsive streak card with daily encouragement and progress cues on student-facing pages.
 - [x] Add deterministic tests for streak calculations, persistence updates, and UI rendering.
+- [x] Add a concise structured recap to each of the ten source-derived lessons.
+- [x] Display each lesson recap with key idea, essential formula or procedure, and mastery takeaway.
+- [x] Verify recap coverage, readability, and responsive presentation across lesson pages.

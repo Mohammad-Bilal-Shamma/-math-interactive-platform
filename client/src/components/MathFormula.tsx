@@ -1,6 +1,6 @@
 import katex from "katex";
 import "katex/dist/katex.min.css";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 
 type MathFormulaProps = {
   latex: string;

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { LearningShell } from "@/components/LearningShell";
+import { LessonRecap } from "@/components/LessonRecap";
 import { MathFormula } from "@/components/MathFormula";
 import { QuestionPanel } from "@/components/QuestionPanel";
 import { UnitCompletionCelebration } from "@/components/UnitCompletionCelebration";
@@ -61,8 +62,9 @@ export default function LessonPage() {
         <p>{lesson.overview}</p>
       </section>
       <div className="lesson-layout page-width">
-        <aside className="lesson-sidecard"><span>في هذا الدرس</span><ol><li><a href="#concept">المفهوم</a></li><li><a href="#formulas">القوانين</a></li><li><a href="#example">مثال محلول</a></li><li><a href="#practice">تطبيق تفاعلي</a></li></ol><div className="lesson-sidecard__progress"><small>حالة الدرس</small><strong>{isCompleted ? "مكتمل" : "قيد الدراسة"}</strong></div></aside>
+        <aside className="lesson-sidecard"><span>في هذا الدرس</span><ol><li><a href="#recap">الملخص</a></li><li><a href="#concept">المفهوم</a></li><li><a href="#formulas">القوانين</a></li><li><a href="#example">مثال محلول</a></li><li><a href="#practice">تطبيق تفاعلي</a></li></ol><div className="lesson-sidecard__progress"><small>حالة الدرس</small><strong>{isCompleted ? "مكتمل" : "قيد الدراسة"}</strong></div></aside>
         <article className="lesson-article">
+          <LessonRecap recap={lesson.recap} />
           <section id="concept" className="lesson-section"><div className="section-title"><BookOpenCheck size={19} /><span>الفكرة الأساسية</span></div>{lesson.explanation.map(paragraph => <p key={paragraph}>{paragraph}</p>)}</section>
           <section className="goals-panel"><ListChecks size={20} /><div><strong>ستتمكن بعد هذا الدرس من:</strong><ul>{lesson.learningGoals.map(goal => <li key={goal}>{goal}</li>)}</ul></div></section>
           <section id="formulas" className="lesson-section"><div className="section-title"><CircleHelp size={19} /><span>قوانين تحتاجها</span></div><div className="formula-stack">{lesson.formulas.map(formula => <div className="formula-card" key={formula.label}><span>{formula.label}</span><MathFormula latex={formula.latex} /></div>)}</div></section>

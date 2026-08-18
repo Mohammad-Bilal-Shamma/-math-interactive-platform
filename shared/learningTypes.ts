@@ -17,11 +17,18 @@ export type SolvedExample = {
   steps: ExampleStep[];
 };
 
+export type LessonRecap = {
+  keyIdea: string;
+  coreFormula: string;
+  masteryTakeaway: string;
+};
+
 export type LessonContent = {
   id: string;
   title: string;
   kicker: string;
   overview: string;
+  recap: LessonRecap;
   learningGoals: string[];
   explanation: string[];
   formulas: Formula[];
