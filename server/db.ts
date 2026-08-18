@@ -6,6 +6,7 @@ import {
   learningLessons,
   learningQuestions,
   questionAttempts,
+  studentAssistantMessages,
   studentDailyStreaks,
   studentLessonProgress,
   studentUnitProgress,
@@ -251,6 +252,39 @@ export async function recordQuestionAttempt(input: {
     });
 
   await recordDailyActivity(input.userId);
+}
+
+export type StudentAssistantMessageInput = {
+  userId: number;
+  role: "user" | "assistant";
+  content: string;
+  imageKey?: string;
+};
+
+export async function getStudentAssistantMessages(userId: number, limit = 40) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const messages = await db
+    .select()
+    .from(studentAssistantMessages)
+    .where(eq(studentAssistantMessages.userId, userId))
+    .orderBy(desc(studentAssistantMessages.createdAt), desc(studentAssistantMessages.id))
+    .limit(limit);
+
+  return messages.reverse();
+}
+
+export async function saveStudentAssistantMessage(input: StudentAssistantMessageInput) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+
+  await db.insert(studentAssistantMessages).values({
+    userId: input.userId,
+    role: input.role,
+    content: input.content,
+    imageKey: input.imageKey ?? null,
+  });
 }
 
 export type TeacherQuestionInput = {

@@ -59,3 +59,7 @@
 - [x] Add secure image attachment support so students can submit photos of mathematical questions for analysis.
 - [x] Build a responsive RTL chat interface with loading, error, attachment, and answer states.
 - [x] Test text-question and image-question flows, authorization, and mobile presentation.
+- [x] Define database records for student-owned assistant conversation messages and attachments.
+- [x] Persist user and assistant messages only within the authenticated student’s conversation history.
+- [x] Restore saved chat history when the student returns to the assistant page, with loading and empty states.
+- [x] Test message persistence, student isolation, restoration, and responsive presentation.

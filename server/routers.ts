@@ -56,6 +56,7 @@ export const appRouter = router({
       .mutation(({ ctx, input }) => learningDb.recordQuestionAttempt({ userId: ctx.user.id, ...input })),
   }),
   mathAssistant: router({
+    history: protectedProcedure.query(({ ctx }) => learningDb.getStudentAssistantMessages(ctx.user.id)),
     uploadImage: protectedProcedure
       .input(z.object({ dataUrl: z.string().min(32).max(6_000_000), fileName: z.string().max(120).optional() }))
       .mutation(({ ctx, input }) => uploadMathQuestionImage({ userId: ctx.user.id, ...input })),
@@ -63,9 +64,20 @@ export const appRouter = router({
       .input(z.object({
         question: z.string().trim().max(6000).optional(),
         imageKey: z.string().max(512).optional(),
-        history: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(5000) })).max(6),
       }).refine(input => Boolean(input.question?.trim() || input.imageKey), { message: "أدخل سؤالًا أو أرفق صورة لمسألة رياضية." }))
-      .mutation(({ ctx, input }) => answerMathQuestion({ userId: ctx.user.id, ...input })),
+      .mutation(async ({ ctx, input }) => {
+        const priorMessages = await learningDb.getStudentAssistantMessages(ctx.user.id, 6);
+        const question = input.question?.trim() || "أرفقت صورة لمسألة رياضية. حلّلها واشرح الخطوات.";
+        await learningDb.saveStudentAssistantMessage({ userId: ctx.user.id, role: "user", content: question, imageKey: input.imageKey });
+        const result = await answerMathQuestion({
+          userId: ctx.user.id,
+          question: input.question,
+          imageKey: input.imageKey,
+          history: priorMessages.map(message => ({ role: message.role, content: message.content })),
+        });
+        await learningDb.saveStudentAssistantMessage({ userId: ctx.user.id, role: "assistant", content: result.answer });
+        return result;
+      }),
   }),
   teacher: router({
     dashboard: adminProcedure.query(() => learningDb.getTeacherDashboard()),

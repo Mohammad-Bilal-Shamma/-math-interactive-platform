@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { index, int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -125,4 +125,17 @@ export const studentDailyStreaks = mysqlTable(
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },
   table => [uniqueIndex("student_daily_streak_user_unique").on(table.userId)],
+);
+
+export const studentAssistantMessages = mysqlTable(
+  "student_assistant_messages",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    role: mysqlEnum("role", ["user", "assistant"]).notNull(),
+    content: text("content").notNull(),
+    imageKey: varchar("imageKey", { length: 512 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [index("student_assistant_messages_user_created_idx").on(table.userId, table.createdAt)],
 );

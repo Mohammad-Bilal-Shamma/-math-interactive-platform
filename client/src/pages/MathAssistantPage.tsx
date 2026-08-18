@@ -1,11 +1,12 @@
 import { BotMessageSquare, ImageUp, Lightbulb, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Streamdown } from "streamdown";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { AIChatBox, type ChatAttachment, type Message as ChatMessage } from "@/components/AIChatBox";
 import { LearningShell } from "@/components/LearningShell";
 import { MathFormula } from "@/components/MathFormula";
 import { trpc } from "@/lib/trpc";
+import { mapSavedAssistantMessages } from "@/mathAssistantHistory";
 
 function MathAnswer({ content }: { content: string }) {
   return (
@@ -25,8 +26,16 @@ export default function MathAssistantPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [attachment, setAttachment] = useState<ChatAttachment & { key: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [hasRestoredHistory, setHasRestoredHistory] = useState(false);
   const askAssistant = trpc.mathAssistant.ask.useMutation();
   const uploadImage = trpc.mathAssistant.uploadImage.useMutation();
+  const savedHistory = trpc.mathAssistant.history.useQuery(undefined, { enabled: isAuthenticated });
+
+  useEffect(() => {
+    if (!savedHistory.data || hasRestoredHistory) return;
+    setMessages(mapSavedAssistantMessages(savedHistory.data));
+    setHasRestoredHistory(true);
+  }, [hasRestoredHistory, savedHistory.data]);
 
   const handleAttachment = (file: File) => {
     if (!isAuthenticated) return startSignIn();
@@ -54,12 +63,10 @@ export default function MathAssistantPage() {
       content: question || "أرفقت صورة لمسألة رياضية. حلّلها واشرح الخطوات.",
       imageUrl: image?.url,
     };
-    const history = messages.slice(-6).map(message => ({ role: message.role as "user" | "assistant", content: message.content }));
-
     setMessages(current => [...current, userMessage]);
     setError(null);
     askAssistant.mutate(
-      { question: question || undefined, imageKey: image?.key, history },
+      { question: question || undefined, imageKey: image?.key },
       {
         onSuccess: result => {
           setMessages(current => [...current, { role: "assistant", content: result.answer }]);
@@ -89,6 +96,8 @@ export default function MathAssistantPage() {
         <div className="math-assistant-workspace">
           {!isAuthenticated ? (
             <div className="math-assistant-signin"><BotMessageSquare size={28} /><h2>سجّل الدخول لبدء المحادثة</h2><p>يحتاج المساعد إلى حساب الطالب لحماية المحادثة والصور المرفقة.</p><button type="button" className="primary-button" onClick={startSignIn}>تسجيل الدخول</button></div>
+          ) : savedHistory.isLoading ? (
+            <div className="math-assistant-history-loading"><BotMessageSquare size={24} /><strong>نعيد تحميل محادثاتك السابقة…</strong><span>ستظهر رسائلك المحفوظة خلال لحظات.</span></div>
           ) : (
             <>
               <AIChatBox
