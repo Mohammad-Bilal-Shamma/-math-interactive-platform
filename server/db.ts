@@ -1,7 +1,10 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import { nanoid } from "nanoid";
 import {
   InsertUser,
+  learningLessons,
+  learningQuestions,
   questionAttempts,
   studentLessonProgress,
   studentUnitProgress,
@@ -61,7 +64,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     if (user.role !== undefined) {
       values.role = user.role;
       updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
+    } else if (user.openId === ENV.ownerOpenId || user.openId === ENV.clerkAdminUserId) {
       values.role = 'admin';
       updateSet.role = 'admin';
     }
@@ -204,5 +207,122 @@ export async function recordQuestionAttempt(input: {
         lastLessonId: input.lessonId,
         updatedAt: new Date(),
       },
-    });
+  });
+}
+
+export type TeacherQuestionInput = {
+  id?: string;
+  unitId: string;
+  lessonId: string;
+  questionType: "numeric" | "choice" | "table" | "multiStep";
+  title: string;
+  prompt: string;
+  answerSchemaJson: string;
+  tolerance?: string;
+  explanation?: string;
+  correctStep?: string;
+  isPublished: boolean;
+  sortOrder: number;
+  createdByUserId: number;
+};
+
+export async function getTeacherDashboard() {
+  const db = await getDb();
+  if (!db) return { lessons: [], questions: [], students: [], recentAttempts: [] };
+
+  const [lessons, questions, students, recentAttempts] = await Promise.all([
+    db.select().from(learningLessons).orderBy(learningLessons.unitId, learningLessons.sortOrder),
+    db.select().from(learningQuestions).orderBy(learningQuestions.unitId, learningQuestions.sortOrder),
+    db.select().from(users).orderBy(desc(users.lastSignedIn)).limit(40),
+    db.select().from(questionAttempts).orderBy(desc(questionAttempts.createdAt)).limit(20),
+  ]);
+
+  return { lessons, questions, students, recentAttempts };
+}
+
+export async function saveTeacherQuestion(input: TeacherQuestionInput) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+
+  const id = input.id ?? `teacher-question-${nanoid(10)}`;
+  const values = {
+    id,
+    unitId: input.unitId,
+    lessonId: input.lessonId,
+    questionType: input.questionType,
+    title: input.title,
+    prompt: input.prompt,
+    answerSchemaJson: input.answerSchemaJson,
+    tolerance: input.tolerance ?? null,
+    explanation: input.explanation ?? null,
+    correctStep: input.correctStep ?? null,
+    isPublished: input.isPublished ? 1 : 0,
+    sortOrder: input.sortOrder,
+    createdByUserId: input.createdByUserId,
+  };
+
+  await db.insert(learningQuestions).values(values).onDuplicateKeyUpdate({
+    set: {
+      unitId: values.unitId,
+      lessonId: values.lessonId,
+      questionType: values.questionType,
+      title: values.title,
+      prompt: values.prompt,
+      answerSchemaJson: values.answerSchemaJson,
+      tolerance: values.tolerance,
+      explanation: values.explanation,
+      correctStep: values.correctStep,
+      isPublished: values.isPublished,
+      sortOrder: values.sortOrder,
+      updatedAt: new Date(),
+    },
+  });
+
+  return id;
+}
+
+export type TeacherLessonInput = {
+  id?: string;
+  unitId: string;
+  title: string;
+  summary?: string;
+  contentJson?: string;
+  visualizationType?: "interpolation" | "integration" | "newton" | "euler" | "";
+  visualizationConfigJson?: string;
+  isPublished: boolean;
+  sortOrder: number;
+};
+
+export async function saveTeacherLesson(input: TeacherLessonInput) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+
+  const id = input.id ?? `teacher-lesson-${nanoid(10)}`;
+  const values = {
+    id,
+    unitId: input.unitId,
+    title: input.title,
+    summary: input.summary ?? null,
+    contentJson: input.contentJson ?? null,
+    visualizationType: input.visualizationType || null,
+    visualizationConfigJson: input.visualizationConfigJson ?? null,
+    isPublished: input.isPublished ? 1 : 0,
+    sortOrder: input.sortOrder,
+  };
+
+  await db.insert(learningLessons).values(values).onDuplicateKeyUpdate({
+    set: {
+      unitId: values.unitId,
+      title: values.title,
+      summary: values.summary,
+      contentJson: values.contentJson,
+      visualizationType: values.visualizationType,
+      visualizationConfigJson: values.visualizationConfigJson,
+      isPublished: values.isPublished,
+      sortOrder: values.sortOrder,
+      updatedAt: new Date(),
+    },
+  });
+
+  return id;
 }

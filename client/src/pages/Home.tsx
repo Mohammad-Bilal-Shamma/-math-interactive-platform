@@ -24,7 +24,7 @@ export default function Home() {
           <p>منصة عربية تفاعلية تجمع الشرح المركز، الأمثلة المحلولة، والمسائل التي تمنحك تصحيحًا فوريًا لكل خطوة.</p>
           <div className="hero-actions">
             <Link href="/units/errors-rounding" className="primary-button">ابدأ من الوحدة الأولى <ArrowLeft size={18} /></Link>
-            <Link href="/results" className="subtle-button">شاهد النتائج</Link>
+            <Link href="/visualize" className="subtle-button">افتح المختبر المرئي</Link>
           </div>
           <div className="hero-meta"><span><strong>٥</strong> وحدات دراسية</span><span><strong>٤</strong> أنماط أسئلة</span><span><strong>RTL</strong> واجهة عربية كاملة</span></div>
         </div>

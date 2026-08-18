@@ -1,6 +1,8 @@
 import { Link, useLocation } from "wouter";
-import { BookOpen, ChartNoAxesCombined, ChevronLeft, Menu, X } from "lucide-react";
+import { UserButton } from "@clerk/react";
+import { BookOpen, ChartNoAxesCombined, ChevronLeft, LayoutDashboard, LineChart, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 type LearningShellProps = {
   children: React.ReactNode;
@@ -9,11 +11,13 @@ type LearningShellProps = {
 export function LearningShell({ children }: LearningShellProps) {
   const [location] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, isAuthenticated, startSignIn } = useAuth();
 
   const closeMenu = () => setMenuOpen(false);
   const links = [
     { href: "/", label: "الرئيسية", icon: BookOpen },
     { href: "/results", label: "النتائج", icon: ChartNoAxesCombined },
+    { href: "/visualize", label: "المختبر", icon: LineChart },
   ];
 
   return (
@@ -40,9 +44,16 @@ export function LearningShell({ children }: LearningShellProps) {
               {label}
             </Link>
           ))}
+          {user?.role === "admin" && (
+            <Link href="/teacher" className={`nav-link ${location === "/teacher" ? "nav-link--active" : ""}`} onClick={closeMenu}>
+              <LayoutDashboard size={16} strokeWidth={2.2} /> لوحة المدرس
+            </Link>
+          )}
           <Link href="/units/errors-rounding" className="nav-cta" onClick={closeMenu}>
             ابدأ الدراسة <ChevronLeft size={16} />
           </Link>
+          {!isAuthenticated && <button type="button" className="auth-button" onClick={startSignIn}>تسجيل الدخول</button>}
+          {isAuthenticated && <UserButton />}
         </nav>
       </header>
       <main>{children}</main>

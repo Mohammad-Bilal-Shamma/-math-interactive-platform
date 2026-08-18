@@ -36,6 +36,9 @@ Vercel توضح أن Vite ينتج أصولًا ثابتة محسّنة، وأن
 |---|---:|---|
 | `DATABASE_URL` | نعم لحفظ تقدم الطلاب | سلسلة اتصال MySQL/TiDB خاصة ببيئة Vercel، مع TLS عند طلب المزود. |
 | `JWT_SECRET` | نعم | قيمة عشوائية طويلة ومختلفة عن بيئة Manus. |
+| `VITE_CLERK_PUBLISHABLE_KEY` و`CLERK_PUBLISHABLE_KEY` | نعم عند استخدام Clerk | المفتاح العام نفسه: الأول للواجهة والثاني لـ Clerk Express. |
+| `CLERK_SECRET_KEY` | نعم عند استخدام Clerk | مفتاح خادمي فقط؛ لا يبدأ بـ`VITE_` ولا يوضع في GitHub. |
+| `CLERK_ADMIN_USER_ID` | نعم للوصول إلى لوحة المدرس | معرّف حساب المدرس في Clerk ويبدأ عادةً بـ`user_`. |
 | `VITE_APP_ID` | فقط عند إبقاء Manus OAuth | معرّف تطبيق OAuth الحالي. |
 | `OAUTH_SERVER_URL` | فقط عند إبقاء Manus OAuth | خادم OAuth المستخدم حاليًا. |
 | `VITE_OAUTH_PORTAL_URL` | فقط عند إبقاء Manus OAuth | بوابة تسجيل الدخول. |
@@ -47,7 +50,9 @@ Vercel توضح أن Vite ينتج أصولًا ثابتة محسّنة، وأن
 
 ## قيد المصادقة المهم
 
-المصادقة الحالية مصممة لـ **Manus OAuth**، وتُعيد التوجيه إلى `/api/oauth/callback`. قبل أن تعمل على Vercel يجب أن تسمح إعدادات تطبيق OAuth بعنوان مثل:
+أصبحت المنصة تدعم **Clerk** للمصادقة. أضف نطاق Vercel إلى قائمة النطاقات المسموح بها في Clerk، ثم ضع متغيرات Clerk في Vercel لكل من Preview وProduction. بعد تسجيل دخول المدرس للمرة الأولى، انسخ معرّف `user_...` الظاهر في صفحة الحساب أو لوحة Clerk إلى `CLERK_ADMIN_USER_ID`؛ حينها فقط تتاح صفحة `/teacher` وإجراءات الإدارة الخادمية.
+
+يبقى مسار Manus OAuth القديم في بنية المشروع للتوافق مع بيئة Manus، لكنه ليس مسار المصادقة المعتمد في نسخة Vercel الجديدة. إذا احتجت إبقاء Manus OAuth بالتوازي، يجب أن تسمح إعدادات تطبيق OAuth بعنوان مثل:
 
 ```text
 https://YOUR-PROJECT.vercel.app/api/oauth/callback

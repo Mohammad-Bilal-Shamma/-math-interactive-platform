@@ -36,8 +36,14 @@ export const learningLessons = mysqlTable("learning_lessons", {
   id: varchar("id", { length: 96 }).primaryKey(),
   unitId: varchar("unitId", { length: 64 }).notNull(),
   title: varchar("title", { length: 255 }).notNull(),
+  summary: text("summary"),
+  contentJson: text("contentJson"),
+  visualizationType: varchar("visualizationType", { length: 48 }),
+  visualizationConfigJson: text("visualizationConfigJson"),
+  isPublished: int("isPublished").notNull().default(1),
   sortOrder: int("sortOrder").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
 export const learningQuestions = mysqlTable("learning_questions", {
@@ -45,8 +51,17 @@ export const learningQuestions = mysqlTable("learning_questions", {
   unitId: varchar("unitId", { length: 64 }).notNull(),
   lessonId: varchar("lessonId", { length: 96 }).notNull(),
   questionType: varchar("questionType", { length: 32 }).notNull(),
+  title: varchar("title", { length: 255 }),
+  prompt: text("prompt"),
+  answerSchemaJson: text("answerSchemaJson"),
+  tolerance: varchar("tolerance", { length: 32 }),
+  explanation: text("explanation"),
+  correctStep: text("correctStep"),
+  isPublished: int("isPublished").notNull().default(1),
+  createdByUserId: int("createdByUserId"),
   sortOrder: int("sortOrder").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
 export const learningSolvedExamples = mysqlTable("learning_solved_examples", {

@@ -7,13 +7,17 @@ import Home from "./pages/Home";
 import LessonPage from "./pages/LessonPage";
 import NotFound from "./pages/NotFound";
 import ResultsPage from "./pages/ResultsPage";
+import TeacherPage from "./pages/TeacherPage";
 import UnitPage from "./pages/UnitPage";
+import VisualizationsPage from "./pages/VisualizationsPage";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/results" component={ResultsPage} />
+      <Route path="/teacher" component={TeacherPage} />
+      <Route path="/visualize" component={VisualizationsPage} />
       <Route path="/units/:unitSlug/lessons/:lessonId" component={LessonPage} />
       <Route path="/units/:unitSlug" component={UnitPage} />
       <Route path="/404" component={NotFound} />

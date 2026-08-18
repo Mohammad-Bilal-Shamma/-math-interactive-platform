@@ -4,7 +4,7 @@ import { summarizeLearningProgress } from "@shared/learningStatistics";
 import * as learningDb from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 
 export const appRouter = router({
@@ -52,6 +52,42 @@ export const appRouter = router({
         }),
       )
       .mutation(({ ctx, input }) => learningDb.recordQuestionAttempt({ userId: ctx.user.id, ...input })),
+  }),
+  teacher: router({
+    dashboard: adminProcedure.query(() => learningDb.getTeacherDashboard()),
+    saveQuestion: adminProcedure
+      .input(
+        z.object({
+          id: z.string().max(96).optional(),
+          unitId: z.string().min(1).max(64),
+          lessonId: z.string().min(1).max(96),
+          questionType: z.enum(["numeric", "choice", "table", "multiStep"]),
+          title: z.string().min(3).max(255),
+          prompt: z.string().min(3).max(5000),
+          answerSchemaJson: z.string().min(2).max(12000),
+          tolerance: z.string().max(32).optional(),
+          explanation: z.string().max(5000).optional(),
+          correctStep: z.string().max(5000).optional(),
+          isPublished: z.boolean(),
+          sortOrder: z.number().int().min(1).max(999),
+        }),
+      )
+      .mutation(({ ctx, input }) => learningDb.saveTeacherQuestion({ ...input, createdByUserId: ctx.user.id })),
+    saveLesson: adminProcedure
+      .input(
+        z.object({
+          id: z.string().max(96).optional(),
+          unitId: z.string().min(1).max(64),
+          title: z.string().min(3).max(255),
+          summary: z.string().max(5000).optional(),
+          contentJson: z.string().max(20000).optional(),
+          visualizationType: z.enum(["", "interpolation", "integration", "newton", "euler"]),
+          visualizationConfigJson: z.string().max(12000).optional(),
+          isPublished: z.boolean(),
+          sortOrder: z.number().int().min(1).max(999),
+        }),
+      )
+      .mutation(({ input }) => learningDb.saveTeacherLesson(input)),
   }),
 });
 

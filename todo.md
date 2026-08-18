@@ -27,3 +27,10 @@
 - [x] Validate the production build and package the Vercel-ready source archive.
 - [x] Deliver the final Vercel-ready project source archive requested by the user.
 - [x] Replace the platform-specific Vercel build environment syntax with a Windows-compatible command and deliver an updated archive.
+- [x] Configure Clerk as the selected production-ready external authentication provider compatible with Vercel.
+- [x] Assign the intended teacher's Clerk `user_...` identifier to `CLERK_ADMIN_USER_ID` and verify that student accounts cannot access the teacher routes.
+- [x] Add teacher/admin authorization and database models for authored lessons, questions, and mathematical answer settings.
+- [x] Build a secure teacher dashboard for managing units, lessons, questions, tolerance values, and student results.
+- [x] Build a KaTeX-aware mathematical problem editor supporting numeric, multiple-choice, table, and multi-step questions.
+- [x] Add interactive learning visualizations for interpolation, numerical integration, Newton iteration, and Euler-style ODE steps.
+- [x] Add automated tests and visual verification for authorization, authoring, grading, and chart interactions.
