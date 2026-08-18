@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { UserButton } from "@clerk/react";
-import { BookOpen, ChartNoAxesCombined, ChevronLeft, LayoutDashboard, LineChart, Menu, X } from "lucide-react";
+import { BookOpen, BotMessageSquare, ChartNoAxesCombined, ChevronLeft, LayoutDashboard, LineChart, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 
@@ -18,6 +18,7 @@ export function LearningShell({ children }: LearningShellProps) {
     { href: "/", label: "الرئيسية", icon: BookOpen },
     { href: "/results", label: "النتائج", icon: ChartNoAxesCombined },
     { href: "/visualize", label: "المختبر", icon: LineChart },
+    { href: "/assistant", label: "المساعد", icon: BotMessageSquare },
   ];
 
   return (

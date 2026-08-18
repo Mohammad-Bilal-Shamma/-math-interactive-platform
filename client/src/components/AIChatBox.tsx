@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { Loader2, Send, User, Sparkles } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { ImageUp, Loader2, Send, User, Sparkles, X } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
 import { Streamdown } from "streamdown";
 
 /**
@@ -12,6 +12,12 @@ import { Streamdown } from "streamdown";
 export type Message = {
   role: "system" | "user" | "assistant";
   content: string;
+  imageUrl?: string;
+};
+
+export type ChatAttachment = {
+  url: string;
+  fileName: string;
 };
 
 export type AIChatBoxProps = {
@@ -25,7 +31,7 @@ export type AIChatBoxProps = {
    * Callback when user sends a message.
    * Typically you'll call a tRPC mutation here to invoke the LLM.
    */
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string, attachment?: ChatAttachment) => void;
 
   /**
    * Whether the AI is currently generating a response
@@ -57,6 +63,18 @@ export type AIChatBoxProps = {
    * Click to send directly
    */
   suggestedPrompts?: string[];
+
+  /** Optional image attachment displayed above the composer. */
+  attachment?: ChatAttachment | null;
+
+  /** Called with an image selected from the device. */
+  onSelectAttachment?: (file: File) => void;
+
+  /** Removes the currently selected image attachment. */
+  onRemoveAttachment?: () => void;
+
+  /** Custom renderer for assistant messages, for example KaTeX-aware math answers. */
+  assistantRenderer?: (content: string) => React.ReactNode;
 };
 
 /**
@@ -119,6 +137,10 @@ export function AIChatBox({
   height = "600px",
   emptyStateMessage = "Start a conversation with AI",
   suggestedPrompts,
+  attachment,
+  onSelectAttachment,
+  onRemoveAttachment,
+  assistantRenderer,
 }: AIChatBoxProps) {
   const [input, setInput] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -168,9 +190,9 @@ export function AIChatBox({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedInput = input.trim();
-    if (!trimmedInput || isLoading) return;
+    if ((!trimmedInput && !attachment) || isLoading) return;
 
-    onSendMessage(trimmedInput);
+    onSendMessage(trimmedInput, attachment || undefined);
     setInput("");
 
     // Scroll immediately after sending
@@ -262,12 +284,13 @@ export function AIChatBox({
                     >
                       {message.role === "assistant" ? (
                         <div className="prose prose-sm dark:prose-invert max-w-none">
-                          <Streamdown>{message.content}</Streamdown>
+                          {assistantRenderer ? assistantRenderer(message.content) : <Streamdown>{message.content}</Streamdown>}
                         </div>
                       ) : (
-                        <p className="whitespace-pre-wrap text-sm">
-                          {message.content}
-                        </p>
+                        <div>
+                          {message.imageUrl && <img src={message.imageUrl} alt="صورة المسألة المرفقة" className="mb-2 max-h-48 rounded-md border object-contain" />}
+                          <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                        </div>
                       )}
                     </div>
 
@@ -308,19 +331,33 @@ export function AIChatBox({
         onSubmit={handleSubmit}
         className="flex gap-2 p-4 border-t bg-background/50 items-end"
       >
-        <Textarea
-          ref={textareaRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className="flex-1 max-h-32 resize-none min-h-9"
-          rows={1}
-        />
+        <div className="flex flex-1 flex-col gap-2">
+          {attachment && (
+            <div className="flex items-center justify-between gap-2 rounded-md border bg-muted/60 px-2 py-1.5 text-xs">
+              <span className="truncate">صورة مرفقة: {attachment.fileName}</span>
+              {onRemoveAttachment && <button type="button" onClick={onRemoveAttachment} className="rounded p-1 hover:bg-background" aria-label="إزالة الصورة المرفقة"><X className="size-3.5" /></button>}
+            </div>
+          )}
+          <Textarea
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            className="flex-1 max-h-32 resize-none min-h-9"
+            rows={1}
+          />
+        </div>
+        {onSelectAttachment && (
+          <label className="inline-flex h-[38px] w-[38px] shrink-0 cursor-pointer items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted" aria-label="إرفاق صورة لمسألة">
+            <ImageUp className="size-4" />
+            <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={event => { const file = event.target.files?.[0]; if (file) onSelectAttachment(file); event.currentTarget.value = ""; }} />
+          </label>
+        )}
         <Button
           type="submit"
           size="icon"
-          disabled={!input.trim() || isLoading}
+          disabled={(!input.trim() && !attachment) || isLoading}
           className="shrink-0 h-[38px] w-[38px]"
         >
           {isLoading ? (

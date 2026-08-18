@@ -54,3 +54,8 @@
 - [x] Add an accessible toggle to collapse and expand each lesson recap.
 - [x] Preserve a useful recap preview and optimize the toggle layout for narrow mobile screens.
 - [x] Test recap toggle state, keyboard semantics, and responsive presentation.
+- [x] Define the Arabic math-assistant guidance, supported inputs, and student-safe answer boundaries.
+- [x] Add authenticated AI chat handling with concise mathematical explanations and KaTeX-ready responses.
+- [x] Add secure image attachment support so students can submit photos of mathematical questions for analysis.
+- [x] Build a responsive RTL chat interface with loading, error, attachment, and answer states.
+- [x] Test text-question and image-question flows, authorization, and mobile presentation.
