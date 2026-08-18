@@ -21,7 +21,7 @@
 | 1 | ادفع المشروع إلى مستودع GitHub تملك صلاحية الكتابة إليه. |
 | 2 | من لوحة Vercel اختر **Add New → Project** ثم استورد المستودع. |
 | 3 | اجعل **Framework Preset** هو `Other` أو اترك `vercel.json` يضبط الإعدادات. |
-| 4 | استخدم `pnpm install --frozen-lockfile` للتثبيت، و`pnpm build:vercel` للبناء، و`dist/public` لمجلد الإخراج. |
+| 4 | استخدم `pnpm install --frozen-lockfile` للتثبيت، و`pnpm build:vercel` للبناء، و`dist/public` لمجلد الإخراج. يعمل أمر البناء نفسه على Windows وmacOS وLinux. |
 | 5 | أضف المتغيرات اللازمة في **Settings → Environment Variables** إلى بيئتي Production وPreview، ثم أعد النشر. |
 | 6 | جهّز قاعدة MySQL/TiDB خارج Manus، طبّق ترحيلات Drizzle عليها، ثم ضع سلسلة الاتصال في `DATABASE_URL`. |
 | 7 | اختبر `/` ومسارات عميقة مثل `/units/errors-rounding` وواجهة `/api/trpc` على رابط Preview قبل جعل النشر Production. |
