@@ -1,9 +1,18 @@
-import { createApp } from "../server/_core/app";
+import app from "../dist/vercel-api.js";
 
 /**
- * Vercel serves this default-exported Express application as a Node.js
- * Function for every /api/* request, including tRPC and OAuth callbacks.
+ * Vercel maps every /api/* request to this exact catch-all function resource.
+ * The rewrite records the original path in `path`, so restore it before
+ * forwarding to the bundled Express application and its `/api/trpc` mount.
  */
-const app = createApp();
+export default function handler(req: { url?: string }, res: unknown) {
+  const requestUrl = new URL(req.url ?? "/", "http://vercel.local");
+  const originalPath = requestUrl.searchParams.get("path");
 
-export default app;
+  if (originalPath) {
+    requestUrl.searchParams.delete("path");
+    req.url = `/api/${originalPath}${requestUrl.search}`;
+  }
+
+  return app(req, res);
+}

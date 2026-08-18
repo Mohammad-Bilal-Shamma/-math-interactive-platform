@@ -80,3 +80,5 @@
 - [ ] Fix the Vercel SPA rewrite so `/api/trpc/*` reaches the serverless API rather than returning `index.html`.
 - [ ] Push the API-rewrite fix to GitHub, redeploy Vercel, and verify the production `auth.me` tRPC endpoint returns JSON rather than `index.html`.
 - [ ] Document the production `/api/trpc/*` health check used to verify future Vercel deployments.
+- [ ] Bundle the Express/tRPC serverless entry point for Vercel so runtime imports resolve within the deployed function.
+- [ ] Push the bundled serverless-function repair to GitHub, deploy it to Vercel, and confirm runtime imports resolve without `ERR_MODULE_NOT_FOUND`.

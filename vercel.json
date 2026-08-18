@@ -6,10 +6,15 @@
   "outputDirectory": "dist/public",
   "functions": {
     "api/[...path].ts": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "dist/vercel-api.js"
     }
   },
   "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/[...path]?path=:path*"
+    },
     {
       "source": "/:path((?!api/).*)",
       "destination": "/index.html"
