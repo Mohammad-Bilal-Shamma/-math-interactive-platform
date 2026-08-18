@@ -77,3 +77,6 @@
 - [x] Generate and store a production `JWT_SECRET` in Vercel without committing it to the repository.
 - [x] Apply the corrected Drizzle migration sequence to Aiven and verify all 11 application tables are present.
 - [ ] Redeploy Vercel and validate Clerk-authenticated progress and teacher data persistence against Aiven.
+- [ ] Fix the Vercel SPA rewrite so `/api/trpc/*` reaches the serverless API rather than returning `index.html`.
+- [ ] Push the API-rewrite fix to GitHub, redeploy Vercel, and verify the production `auth.me` tRPC endpoint returns JSON rather than `index.html`.
+- [ ] Document the production `/api/trpc/*` health check used to verify future Vercel deployments.
