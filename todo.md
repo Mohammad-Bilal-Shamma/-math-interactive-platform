@@ -34,3 +34,8 @@
 - [x] Build a KaTeX-aware mathematical problem editor supporting numeric, multiple-choice, table, and multi-step questions.
 - [x] Add interactive learning visualizations for interpolation, numerical integration, Newton iteration, and Euler-style ODE steps.
 - [x] Add automated tests and visual verification for authorization, authoring, grading, and chart interactions.
+- [x] Add reduced-motion-safe transitions for question entry, answer-state changes, and feedback reveal.
+- [x] Add smooth visual transitions for chart tab changes and numerical parameter updates.
+- [x] Verify the enhanced motion on desktop and mobile, including the reduced-motion fallback.
+- [x] Re-check the post-animation lesson and visual-laboratory layouts on a mobile viewport.
+- [x] Add an automated check that the reduced-motion CSS disables non-essential transitions and keyframe animations.

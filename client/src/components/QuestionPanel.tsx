@@ -14,6 +14,7 @@ export function QuestionPanel({ unitId, question }: QuestionPanelProps) {
   const { isAuthenticated } = useAuth();
   const [answer, setAnswer] = useState<unknown>(question.type === "choice" ? "" : question.type === "numeric" ? "" : {});
   const [result, setResult] = useState<GradeResult | null>(null);
+  const [feedbackVersion, setFeedbackVersion] = useState(0);
   const utils = trpc.useUtils();
   const recordAttempt = trpc.learning.recordQuestionAttempt.useMutation({
     onSuccess: async () => {
@@ -29,6 +30,7 @@ export function QuestionPanel({ unitId, question }: QuestionPanelProps) {
   const handleGrade = () => {
     const grade = gradeQuestion(question, answer);
     setResult(grade);
+    setFeedbackVersion(version => version + 1);
     if (isAuthenticated) {
       recordAttempt.mutate({
         unitId,
@@ -44,10 +46,11 @@ export function QuestionPanel({ unitId, question }: QuestionPanelProps) {
   const reset = () => {
     setAnswer(question.type === "choice" ? "" : question.type === "numeric" ? "" : {});
     setResult(null);
+    setFeedbackVersion(version => version + 1);
   };
 
   return (
-    <section className="question-panel" aria-labelledby={`question-${question.id}`}>
+    <section className={`question-panel ${result ? "question-panel--graded" : ""}`} aria-labelledby={`question-${question.id}`}>
       <div className="question-panel__head">
         <span className="eyebrow">تطبيق تفاعلي</span>
         <span className="question-kind">{question.type === "numeric" ? "إجابة عددية" : question.type === "choice" ? "اختيار من متعدد" : question.type === "table" ? "إكمال جدول" : "حل متعدد الخطوات"}</span>
@@ -107,7 +110,7 @@ export function QuestionPanel({ unitId, question }: QuestionPanelProps) {
       </div>
 
       {result && (
-        <div className={`feedback ${result.isCorrect ? "feedback--correct" : "feedback--wrong"}`} role="status" aria-live="polite">
+        <div key={feedbackVersion} className={`feedback feedback--enter ${result.isCorrect ? "feedback--correct" : "feedback--wrong"}`} role="status" aria-live="polite">
           <div className="feedback__title">{result.isCorrect ? <Check size={20} /> : <CircleAlert size={20} />}<strong>{result.isCorrect ? "إجابة صحيحة" : "لنراجع الفكرة"}</strong></div>
           <p>{result.message}</p>
           {!result.isCorrect && result.correctStep && <div className="feedback__step"><Lightbulb size={17} /><span><strong>الخطوة الصحيحة:</strong> {result.correctStep}</span></div>}
