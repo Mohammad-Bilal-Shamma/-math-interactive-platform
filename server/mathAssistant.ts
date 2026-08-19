@@ -16,6 +16,7 @@ export type MathAssistantAnswerInput = {
 
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+export const mathAssistantModel = "gpt-4o-mini";
 
 export const mathAssistantSystemPrompt = `أنت «مُعين نُقطة»، مساعد رياضي تعليمي داخل منصة عربية للطرق العددية.
 أجب دائمًا بالعربية الفصحى الواضحة، وركّز على تعليم الطالب لا على إعطاء الناتج فقط.
@@ -66,14 +67,14 @@ export async function answerMathQuestion(input: MathAssistantAnswerInput) {
 
   const imageUrl = input.imageKey ? await storageGetSignedUrl(input.imageKey) : undefined;
   const response = await invokeLLM({
-    model: "gemini-3-flash-preview",
+    model: mathAssistantModel,
     maxTokens: 1800,
     messages: buildMathAssistantMessages(input, imageUrl),
   });
   const answer = normalizeAssistantAnswer(response.choices[0]?.message.content);
 
   if (!answer) throw new Error("لم يتمكن المساعد من إنشاء إجابة. حاول إعادة صياغة السؤال.");
-  return { answer, model: response.model || "gemini-3-flash-preview" };
+  return { answer, model: response.model || mathAssistantModel };
 }
 
 export async function uploadMathQuestionImage(input: { userId: number; dataUrl: string; fileName?: string }) {

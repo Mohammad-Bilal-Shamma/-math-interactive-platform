@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildMathAssistantMessages, isOwnedMathAssistantImage, mathAssistantSystemPrompt, normalizeAssistantAnswer } from "./mathAssistant";
+import { buildMathAssistantMessages, isOwnedMathAssistantImage, mathAssistantModel, mathAssistantSystemPrompt, normalizeAssistantAnswer } from "./mathAssistant";
 
 describe("math assistant safeguards", () => {
+  it("uses a vision-capable external model for mathematical image questions", () => {
+    expect(mathAssistantModel).toBe("gpt-4o-mini");
+  });
+
   it("accepts only image keys within the authenticated student namespace", () => {
     expect(isOwnedMathAssistantImage(21, "math-assistant/21/question.png")).toBe(true);
     expect(isOwnedMathAssistantImage(21, "math-assistant/22/question.png")).toBe(false);

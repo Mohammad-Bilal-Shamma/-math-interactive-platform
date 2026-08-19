@@ -7,6 +7,7 @@ export const ENV = {
   clerkAdminUserId: process.env.CLERK_ADMIN_USER_ID ?? "",
   clerkSecretKey: process.env.CLERK_SECRET_KEY ?? "",
   isProduction: process.env.NODE_ENV === "production",
+  openaiApiKey: process.env.OPENAI_API_KEY ?? "",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
 };

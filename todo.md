@@ -77,8 +77,10 @@
 - [x] Generate and store a production `JWT_SECRET` in Vercel without committing it to the repository.
 - [x] Apply the corrected Drizzle migration sequence to Aiven and verify all 11 application tables are present.
 - [ ] Redeploy Vercel and validate Clerk-authenticated progress and teacher data persistence against Aiven.
-- [ ] Fix the Vercel SPA rewrite so `/api/trpc/*` reaches the serverless API rather than returning `index.html`.
-- [ ] Push the API-rewrite fix to GitHub, redeploy Vercel, and verify the production `auth.me` tRPC endpoint returns JSON rather than `index.html`.
-- [ ] Document the production `/api/trpc/*` health check used to verify future Vercel deployments.
-- [ ] Bundle the Express/tRPC serverless entry point for Vercel so runtime imports resolve within the deployed function.
-- [ ] Push the bundled serverless-function repair to GitHub, deploy it to Vercel, and confirm runtime imports resolve without `ERR_MODULE_NOT_FOUND`.
+- [x] Fix the Vercel SPA rewrite so `/api/trpc/*` reaches the serverless API rather than returning `index.html`.
+- [x] Push the API-rewrite fix to GitHub, redeploy Vercel, and verify the production `auth.me` tRPC endpoint returns JSON rather than `index.html`.
+- [x] Document the production `/api/trpc/*` health check used to verify future Vercel deployments.
+- [x] Bundle the Express/tRPC serverless entry point for Vercel so runtime imports resolve within the deployed function.
+- [x] Push the bundled serverless-function repair to GitHub, deploy it to Vercel, and confirm runtime imports resolve without `ERR_MODULE_NOT_FOUND`.
+- [x] Store the user-provided external AI API key securely as a Vercel environment variable without committing it.
+- [ ] Replace the Forge-backed math-assistant completion call with the configured external AI provider while preserving Arabic and image-question support.
