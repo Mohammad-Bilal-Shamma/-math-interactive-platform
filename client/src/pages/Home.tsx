@@ -1,4 +1,5 @@
-import { ArrowLeft, BookMarked, CheckCircle2, CircleGauge, Sparkles } from "lucide-react";
+import React from "react";
+import { ArrowLeft, BookMarked, CheckCircle2, CircleGauge, Code2, GraduationCap, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { LearningShell } from "@/components/LearningShell";
@@ -29,6 +30,10 @@ export default function Home() {
             <Link href="/visualize" className="subtle-button">افتح المختبر المرئي</Link>
           </div>
           <div className="hero-meta"><span><strong>٥</strong> وحدات دراسية</span><span><strong>٤</strong> أنماط أسئلة</span><span><strong>RTL</strong> واجهة عربية كاملة</span></div>
+          <aside className="hero-credits" aria-label="الاعتماد الأكاديمي والتقني للمنصة">
+            <span><GraduationCap size={15} aria-hidden="true" /> تحت إشراف الدكتورة نسرين الحميش</span>
+            <span><Code2 size={15} aria-hidden="true" /> برمجة بلال شما</span>
+          </aside>
         </div>
         <div className="hero-math" aria-label="مثال على معادلة رياضية معروضة">
           <span className="math-note math-note--one">اقرأ القانون</span>

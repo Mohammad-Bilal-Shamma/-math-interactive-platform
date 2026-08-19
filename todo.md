@@ -87,3 +87,5 @@
 - [x] Configure Cloudinary credentials for secure server-side storage of uploaded math-question images on Vercel.
 - [ ] Replace the Forge-backed image storage adapter with the selected Cloudinary upload and delivery integration.
 - [ ] Correct Cloudinary public-ID storage and restored-delivery URL generation so persisted image attachments resolve after production upload.
+- [ ] Replace the exhausted OpenAI credential with the newly supplied key and validate it before production assistant retesting.
+- [x] Add the requested home-page attribution: academic supervision by Dr. Nasreen Al-Humaish and programming by Bilal Shamma.
