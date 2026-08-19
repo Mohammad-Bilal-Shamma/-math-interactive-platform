@@ -29,7 +29,7 @@ export default function Home() {
             <Link href="/units/errors-rounding" className="primary-button">ابدأ من الوحدة الأولى <ArrowLeft size={18} /></Link>
             <Link href="/visualize" className="subtle-button">افتح المختبر المرئي</Link>
           </div>
-          <div className="hero-meta"><span><strong>٥</strong> وحدات دراسية</span><span><strong>٤</strong> أنماط أسئلة</span><span><strong>RTL</strong> واجهة عربية كاملة</span></div>
+          <div className="hero-meta"><span><strong>٥</strong> وحدات دراسية</span></div>
           <aside className="hero-credits" aria-label="الاعتماد الأكاديمي والتقني للمنصة">
             <span><GraduationCap size={15} aria-hidden="true" /> تحت إشراف الدكتورة نسرين الحميش</span>
             <span><Code2 size={15} aria-hidden="true" /> برمجة بلال شما</span>

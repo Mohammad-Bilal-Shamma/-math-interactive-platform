@@ -41,5 +41,7 @@ describe("Home attribution", () => {
     expect(markup).toContain("تحت إشراف الدكتورة نسرين الحميش");
     expect(markup).toContain("برمجة بلال شما");
     expect(markup).toContain("الاعتماد الأكاديمي والتقني للمنصة");
+    expect(markup).not.toContain("٤ أنماط أسئلة");
+    expect(markup).not.toContain("واجهة عربية كاملة");
   });
 });
