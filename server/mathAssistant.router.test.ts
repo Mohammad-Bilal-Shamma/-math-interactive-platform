@@ -9,9 +9,11 @@ const mockedDb = vi.hoisted(() => ({
   getStudentAssistantMessages: vi.fn(),
   saveStudentAssistantMessage: vi.fn(),
 }));
+const mockedStorage = vi.hoisted(() => ({ storageGet: vi.fn() }));
 
 vi.mock("./mathAssistant", () => mockedAssistant);
 vi.mock("./db", () => mockedDb);
+vi.mock("./storage", () => mockedStorage);
 
 import { appRouter } from "./routers";
 
@@ -61,5 +63,14 @@ describe("math assistant router", () => {
 
     await expect(caller.mathAssistant.history()).resolves.toEqual([{ id: 8, userId: 31, role: "assistant", content: "إجابة محفوظة", imageKey: null }]);
     expect(mockedDb.getStudentAssistantMessages).toHaveBeenCalledWith(31);
+  });
+
+  it("adds a safe image-delivery URL only for the authenticated student's saved attachment", async () => {
+    mockedDb.getStudentAssistantMessages.mockResolvedValue([{ id: 9, userId: 31, role: "user", content: "حل الصورة", imageKey: "math-assistant/31/question.png" }]);
+    mockedStorage.storageGet.mockResolvedValue({ key: "math-assistant/31/question.png", url: "https://res.cloudinary.com/demo/image/upload/math-assistant/31/question.png" });
+    const caller = appRouter.createCaller(createStudentContext());
+
+    await expect(caller.mathAssistant.history()).resolves.toEqual([{ id: 9, userId: 31, role: "user", content: "حل الصورة", imageKey: "math-assistant/31/question.png", imageUrl: "https://res.cloudinary.com/demo/image/upload/math-assistant/31/question.png" }]);
+    expect(mockedStorage.storageGet).toHaveBeenCalledWith("math-assistant/31/question.png");
   });
 });

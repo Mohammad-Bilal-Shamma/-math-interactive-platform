@@ -84,3 +84,5 @@
 - [x] Push the bundled serverless-function repair to GitHub, deploy it to Vercel, and confirm runtime imports resolve without `ERR_MODULE_NOT_FOUND`.
 - [x] Store the user-provided external AI API key securely as a Vercel environment variable without committing it.
 - [ ] Replace the Forge-backed math-assistant completion call with the configured external AI provider while preserving Arabic and image-question support.
+- [x] Configure Cloudinary credentials for secure server-side storage of uploaded math-question images on Vercel.
+- [ ] Replace the Forge-backed image storage adapter with the selected Cloudinary upload and delivery integration.

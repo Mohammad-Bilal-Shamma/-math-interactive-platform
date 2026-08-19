@@ -1,97 +1,98 @@
-// Preconfigured storage helpers for Manus WebDev templates
-// Uploads via Forge Server presigned URL to S3 (PUT direct).
-// Downloads return /manus-storage/{key} paths served via 307 redirect.
-
+import { createHash, randomUUID } from "node:crypto";
 import { ENV } from "./_core/env";
 
-function getForgeConfig() {
-  const forgeUrl = ENV.forgeApiUrl;
-  const forgeKey = ENV.forgeApiKey;
+export type CloudinaryConfig = {
+  cloudName: string;
+  apiKey: string;
+  apiSecret: string;
+};
 
-  if (!forgeUrl || !forgeKey) {
-    throw new Error(
-      "Storage config missing: set BUILT_IN_FORGE_API_URL and BUILT_IN_FORGE_API_KEY",
-    );
+export function parseCloudinaryUrl(value: string): CloudinaryConfig {
+  const url = new URL(value);
+  if (url.protocol !== "cloudinary:" || !url.username || !url.password || !url.hostname) {
+    throw new Error("CLOUDINARY_URL must include a cloud name, API key, and API secret.");
   }
 
-  return { forgeUrl: forgeUrl.replace(/\/+$/, ""), forgeKey };
+  return {
+    cloudName: url.hostname,
+    apiKey: decodeURIComponent(url.username),
+    apiSecret: decodeURIComponent(url.password),
+  };
+}
+
+function getCloudinaryConfig(): CloudinaryConfig {
+  if (!ENV.cloudinaryUrl.trim()) {
+    throw new Error("لم يتم إعداد تخزين الصور على الخادم. أضف CLOUDINARY_URL لإتاحة رفع الصور.");
+  }
+  return parseCloudinaryUrl(ENV.cloudinaryUrl);
 }
 
 function normalizeKey(relKey: string): string {
-  return relKey.replace(/^\/+/, "");
+  const key = relKey.replace(/^\/+/, "");
+  if (!key || key.includes("..")) throw new Error("مفتاح تخزين الصورة غير صالح.");
+  return key;
 }
 
 function appendHashSuffix(relKey: string): string {
-  const hash = crypto.randomUUID().replace(/-/g, "").slice(0, 8);
+  const hash = randomUUID().replace(/-/g, "").slice(0, 8);
   const lastDot = relKey.lastIndexOf(".");
   if (lastDot === -1) return `${relKey}_${hash}`;
   return `${relKey.slice(0, lastDot)}_${hash}${relKey.slice(lastDot)}`;
 }
 
+export function buildCloudinaryDeliveryUrl(key: string, cloudName: string): string {
+  const normalizedKey = normalizeKey(key).split("/").map(encodeURIComponent).join("/");
+  return `https://res.cloudinary.com/${encodeURIComponent(cloudName)}/image/upload/f_auto,q_auto/${normalizedKey}`;
+}
+
+function createUploadSignature({ publicId, timestamp, apiSecret }: { publicId: string; timestamp: number; apiSecret: string }) {
+  return createHash("sha1")
+    .update(`public_id=${publicId}&timestamp=${timestamp}${apiSecret}`)
+    .digest("hex");
+}
+
+function toDataUrl(data: Buffer | Uint8Array | string, contentType: string): string {
+  if (typeof data === "string" && data.startsWith("data:")) return data;
+  return `data:${contentType};base64,${Buffer.from(data).toString("base64")}`;
+}
+
+/** Upload a server-validated image through Cloudinary's signed Upload API. */
 export async function storagePut(
   relKey: string,
   data: Buffer | Uint8Array | string,
   contentType = "application/octet-stream",
 ): Promise<{ key: string; url: string }> {
-  const { forgeUrl, forgeKey } = getForgeConfig();
+  const config = getCloudinaryConfig();
   const key = appendHashSuffix(normalizeKey(relKey));
+  const timestamp = Math.floor(Date.now() / 1000);
+  const form = new FormData();
+  form.set("file", toDataUrl(data, contentType));
+  form.set("public_id", key);
+  form.set("api_key", config.apiKey);
+  form.set("timestamp", String(timestamp));
+  form.set("signature", createUploadSignature({ publicId: key, timestamp, apiSecret: config.apiSecret }));
 
-  // 1. Get presigned PUT URL from Forge
-  const presignUrl = new URL("v1/storage/presign/put", forgeUrl + "/");
-  presignUrl.searchParams.set("path", key);
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${encodeURIComponent(config.cloudName)}/image/upload`,
+    { method: "POST", body: form },
+  );
 
-  const presignResp = await fetch(presignUrl, {
-    headers: { Authorization: `Bearer ${forgeKey}` },
-  });
-
-  if (!presignResp.ok) {
-    const msg = await presignResp.text().catch(() => presignResp.statusText);
-    throw new Error(`Storage presign failed (${presignResp.status}): ${msg}`);
+  if (!response.ok) {
+    const message = await response.text().catch(() => response.statusText);
+    throw new Error(`تعذر رفع الصورة إلى التخزين الخارجي (${response.status}): ${message}`);
   }
 
-  const { url: s3Url } = (await presignResp.json()) as { url: string };
-  if (!s3Url) throw new Error("Forge returned empty presign URL");
-
-  // 2. PUT file directly to S3
-  const blob =
-    typeof data === "string"
-      ? new Blob([data], { type: contentType })
-      : new Blob([data as any], { type: contentType });
-
-  const uploadResp = await fetch(s3Url, {
-    method: "PUT",
-    headers: { "Content-Type": contentType },
-    body: blob,
-  });
-
-  if (!uploadResp.ok) {
-    throw new Error(`Storage upload to S3 failed (${uploadResp.status})`);
-  }
-
-  return { key, url: `/manus-storage/${key}` };
+  const result = await response.json() as { secure_url?: string };
+  return { key, url: result.secure_url || buildCloudinaryDeliveryUrl(key, config.cloudName) };
 }
 
 export async function storageGet(relKey: string): Promise<{ key: string; url: string }> {
+  const config = getCloudinaryConfig();
   const key = normalizeKey(relKey);
-  return { key, url: `/manus-storage/${key}` };
+  return { key, url: buildCloudinaryDeliveryUrl(key, config.cloudName) };
 }
 
+/** Cloudinary delivery URLs are used by the client and vision-capable assistant. */
 export async function storageGetSignedUrl(relKey: string): Promise<string> {
-  const { forgeUrl, forgeKey } = getForgeConfig();
-  const key = normalizeKey(relKey);
-
-  const getUrl = new URL("v1/storage/presign/get", forgeUrl + "/");
-  getUrl.searchParams.set("path", key);
-
-  const resp = await fetch(getUrl, {
-    headers: { Authorization: `Bearer ${forgeKey}` },
-  });
-
-  if (!resp.ok) {
-    const msg = await resp.text().catch(() => resp.statusText);
-    throw new Error(`Storage signed URL failed (${resp.status}): ${msg}`);
-  }
-
-  const { url } = (await resp.json()) as { url: string };
-  return url;
+  return (await storageGet(relKey)).url;
 }

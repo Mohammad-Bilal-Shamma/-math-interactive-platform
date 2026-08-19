@@ -5,6 +5,7 @@ import * as learningDb from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { answerMathQuestion, uploadMathQuestionImage } from "./mathAssistant";
+import { storageGet } from "./storage";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 
@@ -56,7 +57,14 @@ export const appRouter = router({
       .mutation(({ ctx, input }) => learningDb.recordQuestionAttempt({ userId: ctx.user.id, ...input })),
   }),
   mathAssistant: router({
-    history: protectedProcedure.query(({ ctx }) => learningDb.getStudentAssistantMessages(ctx.user.id)),
+    history: protectedProcedure.query(async ({ ctx }) => {
+      const messages = await learningDb.getStudentAssistantMessages(ctx.user.id);
+      return Promise.all(messages.map(async message => {
+        if (!message.imageKey) return message;
+        const { url } = await storageGet(message.imageKey);
+        return { ...message, imageUrl: url };
+      }));
+    }),
     uploadImage: protectedProcedure
       .input(z.object({ dataUrl: z.string().min(32).max(6_000_000), fileName: z.string().max(120).optional() }))
       .mutation(({ ctx, input }) => uploadMathQuestionImage({ userId: ctx.user.id, ...input })),
