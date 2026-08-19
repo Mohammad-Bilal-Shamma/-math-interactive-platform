@@ -71,12 +71,12 @@
 - [x] Configure an external database, session secret, AI provider, and image storage before validating authenticated API routes on Vercel.
 - [x] Create an Aiven MySQL free service and obtain a secure MySQL connection URL.
 - [x] Add the Aiven connection and a production session secret to Vercel environment variables.
-- [ ] Apply the existing Drizzle schema to Aiven MySQL and verify protected data persistence.
+- [x] Apply the existing Drizzle schema to Aiven MySQL and verify protected data persistence.
 - [x] Replace Manus-only image storage and AI runtime dependencies with Vercel-compatible services.
 - [x] Update the MySQL runtime adapter to enforce Aiven-compatible TLS connections on Vercel.
 - [x] Generate and store a production `JWT_SECRET` in Vercel without committing it to the repository.
 - [x] Apply the corrected Drizzle migration sequence to Aiven and verify all 11 application tables are present.
-- [ ] Redeploy Vercel and validate Clerk-authenticated progress and teacher data persistence against Aiven.
+- [x] Redeploy Vercel and validate Clerk-authenticated progress and teacher data persistence against Aiven.
 - [x] Fix the Vercel SPA rewrite so `/api/trpc/*` reaches the serverless API rather than returning `index.html`.
 - [x] Push the API-rewrite fix to GitHub, redeploy Vercel, and verify the production `auth.me` tRPC endpoint returns JSON rather than `index.html`.
 - [x] Document the production `/api/trpc/*` health check used to verify future Vercel deployments.
@@ -92,6 +92,6 @@
 - [x] Remove the requested hero metadata labels for question types and full RTL-interface wording from the home page.
 - [x] Configure a secure Google Gemini API key for the deployed assistant.
 - [x] Replace the OpenAI assistant adapter with a Gemini text-and-image adapter while preserving Arabic math guidance and stored conversation behavior.
-- [ ] Verify after deployment that Clerk-authenticated student lesson progress persists to Aiven MySQL.
-- [ ] Verify after deployment that the designated teacher can load and save protected teacher-dashboard data against Aiven MySQL.
-- [ ] Replace the retired Gemini 2.0 Flash model identifier with the currently available Gemini Flash model and revalidate the deployed assistant.
+- [x] Verify after deployment that Clerk-authenticated student lesson progress persists to Aiven MySQL.
+- [x] Verify after deployment that the designated teacher can load and save protected teacher-dashboard data against Aiven MySQL.
+- [x] Replace the retired Gemini 2.0 Flash model identifier with the currently available Gemini Flash model and revalidate the deployed assistant.
