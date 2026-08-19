@@ -213,13 +213,22 @@ const normalizeToolChoice = (
 };
 
 export type LlmProviderConfig = {
-  name: "openai" | "forge";
+  name: "gemini" | "openai" | "forge";
   apiKey: string;
   chatCompletionsUrl: string;
   modelsUrl: string;
 };
 
-export function resolveLlmProvider(config: Pick<typeof ENV, "openaiApiKey" | "forgeApiUrl" | "forgeApiKey"> = ENV): LlmProviderConfig {
+export function resolveLlmProvider(config: Pick<typeof ENV, "geminiApiKey" | "openaiApiKey" | "forgeApiUrl" | "forgeApiKey"> = ENV): LlmProviderConfig {
+  if (config.geminiApiKey.trim()) {
+    return {
+      name: "gemini",
+      apiKey: config.geminiApiKey,
+      chatCompletionsUrl: "https://generativelanguage.googleapis.com/v1beta",
+      modelsUrl: "https://generativelanguage.googleapis.com/v1beta/models",
+    };
+  }
+
   if (config.openaiApiKey.trim()) {
     return {
       name: "openai",
@@ -362,9 +371,140 @@ const fetchWithBackoff = async (
     : new Error("LLM request failed after exhausting retries");
 };
 
+type GeminiPart =
+  | { text: string }
+  | { inlineData: { mimeType: string; data: string } };
+
+type GeminiContent = {
+  role: "user" | "model";
+  parts: GeminiPart[];
+};
+
+const GEMINI_MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+const imageUrlToGeminiPart = async (url: string): Promise<GeminiPart> => {
+  const response = await fetchWithBackoff(url, { headers: { accept: "image/*" } });
+  if (!response.ok) {
+    throw new Error("تعذر تنزيل صورة المسألة لتحليلها.");
+  }
+
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (bytes.length === 0 || bytes.length > GEMINI_MAX_IMAGE_BYTES) {
+    throw new Error("حجم صورة المسألة غير مناسب للتحليل.");
+  }
+
+  const contentType = response.headers.get("content-type")?.split(";")[0]?.trim();
+  const mimeType = contentType && contentType.startsWith("image/") ? contentType : "image/jpeg";
+  return { inlineData: { mimeType, data: Buffer.from(bytes).toString("base64") } };
+};
+
+const messageContentToGeminiParts = async (content: Message["content"]): Promise<GeminiPart[]> => {
+  const parts = ensureArray(content);
+  const geminiParts: GeminiPart[] = [];
+
+  for (const part of parts) {
+    if (typeof part === "string") {
+      geminiParts.push({ text: part });
+    } else if (part.type === "text") {
+      geminiParts.push({ text: part.text });
+    } else if (part.type === "image_url") {
+      geminiParts.push(await imageUrlToGeminiPart(part.image_url.url));
+    } else if (part.type === "file_url") {
+      geminiParts.push({ text: `ملف مرفق: ${part.file_url.url}` });
+    }
+  }
+
+  return geminiParts.length > 0 ? geminiParts : [{ text: "" }];
+};
+
+export async function buildGeminiRequest(messages: Message[], maxOutputTokens?: number) {
+  const systemParts: GeminiPart[] = [];
+  const contents: GeminiContent[] = [];
+
+  for (const message of messages) {
+    const parts = await messageContentToGeminiParts(message.content);
+    if (message.role === "system") {
+      systemParts.push(...parts);
+      continue;
+    }
+
+    contents.push({
+      role: message.role === "assistant" ? "model" : "user",
+      parts,
+    });
+  }
+
+  return {
+    ...(systemParts.length > 0 ? { systemInstruction: { parts: systemParts } } : {}),
+    contents,
+    ...(typeof maxOutputTokens === "number" ? { generationConfig: { maxOutputTokens } } : {}),
+  };
+}
+
+type GeminiGenerateResponse = {
+  candidates?: Array<{
+    content?: { parts?: Array<{ text?: string }> };
+    finishReason?: string;
+  }>;
+  modelVersion?: string;
+  usageMetadata?: {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+    totalTokenCount?: number;
+  };
+};
+
+const invokeGemini = async (provider: LlmProviderConfig, params: InvokeParams): Promise<InvokeResult> => {
+  const model = (params.model || "gemini-2.0-flash").replace(/^models\//, "");
+  const maxOutputTokens = params.max_tokens ?? params.maxTokens;
+  const payload = await buildGeminiRequest(params.messages, maxOutputTokens);
+  const response = await fetchWithBackoff(
+    `${provider.chatCompletionsUrl}/models/${encodeURIComponent(model)}:generateContent`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-goog-api-key": provider.apiKey,
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`LLM invoke failed: ${response.status} ${response.statusText} – ${errorText}`);
+  }
+
+  const body = await response.json() as GeminiGenerateResponse;
+  const candidate = body.candidates?.[0];
+  const content = candidate?.content?.parts
+    ?.flatMap(part => typeof part.text === "string" ? [part.text] : [])
+    .join("\n") ?? "";
+
+  return {
+    id: `gemini-${Date.now()}`,
+    created: Math.floor(Date.now() / 1000),
+    model: body.modelVersion || model,
+    choices: [{
+      index: 0,
+      message: { role: "assistant", content },
+      finish_reason: candidate?.finishReason || null,
+    }],
+    usage: body.usageMetadata ? {
+      prompt_tokens: body.usageMetadata.promptTokenCount ?? 0,
+      completion_tokens: body.usageMetadata.candidatesTokenCount ?? 0,
+      total_tokens: body.usageMetadata.totalTokenCount ?? 0,
+    } : undefined,
+  };
+};
+
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   const provider = resolveLlmProvider();
   assertApiKey(provider);
+
+  if (provider.name === "gemini") {
+    return invokeGemini(provider, params);
+  }
 
   const {
     messages,
@@ -459,6 +599,24 @@ export type ModelsResponse = {
 export async function listLLMModels(): Promise<ModelsResponse> {
   const provider = resolveLlmProvider();
   assertApiKey(provider);
+
+  if (provider.name === "gemini") {
+    const response = await fetchWithBackoff(provider.modelsUrl, {
+      headers: { "x-goog-api-key": provider.apiKey },
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`List LLM models failed: ${response.status} ${response.statusText} – ${errorText}`);
+    }
+    const payload = await response.json() as { models?: Array<{ name?: string }> };
+    return {
+      object: "list",
+      data: (payload.models ?? [])
+        .map(model => model.name?.replace(/^models\//, ""))
+        .filter((id): id is string => Boolean(id))
+        .map(id => ({ id, object: "model", created: 0, owned_by: "google" })),
+    };
+  }
 
   const response = await fetchWithBackoff(provider.modelsUrl, {
     headers: { authorization: `Bearer ${provider.apiKey}` },

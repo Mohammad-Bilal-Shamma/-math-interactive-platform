@@ -16,7 +16,7 @@ export type MathAssistantAnswerInput = {
 
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
-export const mathAssistantModel = "gpt-4o-mini";
+export const mathAssistantModel = "gemini-2.0-flash";
 
 export const mathAssistantSystemPrompt = `أنت «مُعين نُقطة»، مساعد رياضي تعليمي داخل منصة عربية للطرق العددية.
 أجب دائمًا بالعربية الفصحى الواضحة، وركّز على تعليم الطالب لا على إعطاء الناتج فقط.

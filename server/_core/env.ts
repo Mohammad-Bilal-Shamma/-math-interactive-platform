@@ -8,6 +8,7 @@ export const ENV = {
   clerkSecretKey: process.env.CLERK_SECRET_KEY ?? "",
   isProduction: process.env.NODE_ENV === "production",
   openaiApiKey: process.env.OPENAI_API_KEY ?? "",
+  geminiApiKey: process.env.GEMINI_API_KEY ?? "",
   cloudinaryUrl: process.env.CLOUDINARY_URL ?? "",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",

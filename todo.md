@@ -68,11 +68,11 @@
 - [x] Verify Vercel build readiness and document the external runtime dependencies required for a functional deployment.
 - [x] Connect the GitHub repository to Vercel and configure the confirmed Clerk production and preview variables.
 - [x] Redeploy the project to Vercel and validate that the public production homepage renders.
-- [ ] Configure an external database, session secret, AI provider, and image storage before validating authenticated API routes on Vercel.
+- [x] Configure an external database, session secret, AI provider, and image storage before validating authenticated API routes on Vercel.
 - [x] Create an Aiven MySQL free service and obtain a secure MySQL connection URL.
 - [x] Add the Aiven connection and a production session secret to Vercel environment variables.
 - [ ] Apply the existing Drizzle schema to Aiven MySQL and verify protected data persistence.
-- [ ] Replace Manus-only image storage and AI runtime dependencies with Vercel-compatible services.
+- [x] Replace Manus-only image storage and AI runtime dependencies with Vercel-compatible services.
 - [x] Update the MySQL runtime adapter to enforce Aiven-compatible TLS connections on Vercel.
 - [x] Generate and store a production `JWT_SECRET` in Vercel without committing it to the repository.
 - [x] Apply the corrected Drizzle migration sequence to Aiven and verify all 11 application tables are present.
@@ -83,10 +83,14 @@
 - [x] Bundle the Express/tRPC serverless entry point for Vercel so runtime imports resolve within the deployed function.
 - [x] Push the bundled serverless-function repair to GitHub, deploy it to Vercel, and confirm runtime imports resolve without `ERR_MODULE_NOT_FOUND`.
 - [x] Store the user-provided external AI API key securely as a Vercel environment variable without committing it.
-- [ ] Replace the Forge-backed math-assistant completion call with the configured external AI provider while preserving Arabic and image-question support.
+- [x] Replace the Forge-backed math-assistant completion call with the configured external AI provider while preserving Arabic and image-question support.
 - [x] Configure Cloudinary credentials for secure server-side storage of uploaded math-question images on Vercel.
-- [ ] Replace the Forge-backed image storage adapter with the selected Cloudinary upload and delivery integration.
-- [ ] Correct Cloudinary public-ID storage and restored-delivery URL generation so persisted image attachments resolve after production upload.
-- [ ] Replace the exhausted OpenAI credential with the newly supplied key and validate it before production assistant retesting.
+- [x] Replace the Forge-backed image storage adapter with the selected Cloudinary upload and delivery integration.
+- [x] Correct Cloudinary public-ID storage and restored-delivery URL generation so persisted image attachments resolve after production upload.
+- [x] Replace the exhausted OpenAI credential with the newly supplied key and validate it before production assistant retesting (superseded by the verified Gemini migration).
 - [x] Add the requested home-page attribution: academic supervision by Dr. Nasreen Al-Humaish and programming by Bilal Shamma.
 - [x] Remove the requested hero metadata labels for question types and full RTL-interface wording from the home page.
+- [x] Configure a secure Google Gemini API key for the deployed assistant.
+- [x] Replace the OpenAI assistant adapter with a Gemini text-and-image adapter while preserving Arabic math guidance and stored conversation behavior.
+- [ ] Verify after deployment that Clerk-authenticated student lesson progress persists to Aiven MySQL.
+- [ ] Verify after deployment that the designated teacher can load and save protected teacher-dashboard data against Aiven MySQL.
