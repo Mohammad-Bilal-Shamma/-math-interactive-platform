@@ -11,8 +11,8 @@ describe("Cloudinary storage adapter", () => {
   });
 
   it("builds an HTTPS image delivery URL for an application-owned attachment key", () => {
-    expect(buildCloudinaryDeliveryUrl("math-assistant/31/question image.png", "nuqta-cloud"))
-      .toBe("https://res.cloudinary.com/nuqta-cloud/image/upload/f_auto,q_auto/math-assistant/31/question%20image.png");
+    expect(buildCloudinaryDeliveryUrl("math-assistant/31/question-image", "nuqta-cloud"))
+      .toBe("https://res.cloudinary.com/nuqta-cloud/image/upload/f_auto,q_auto/math-assistant/31/question-image");
   });
 
   it("rejects traversal attempts in application storage keys", () => {

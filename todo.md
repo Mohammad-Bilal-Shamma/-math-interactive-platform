@@ -86,3 +86,4 @@
 - [ ] Replace the Forge-backed math-assistant completion call with the configured external AI provider while preserving Arabic and image-question support.
 - [x] Configure Cloudinary credentials for secure server-side storage of uploaded math-question images on Vercel.
 - [ ] Replace the Forge-backed image storage adapter with the selected Cloudinary upload and delivery integration.
+- [ ] Correct Cloudinary public-ID storage and restored-delivery URL generation so persisted image attachments resolve after production upload.

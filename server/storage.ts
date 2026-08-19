@@ -36,8 +36,9 @@ function normalizeKey(relKey: string): string {
 function appendHashSuffix(relKey: string): string {
   const hash = randomUUID().replace(/-/g, "").slice(0, 8);
   const lastDot = relKey.lastIndexOf(".");
-  if (lastDot === -1) return `${relKey}_${hash}`;
-  return `${relKey.slice(0, lastDot)}_${hash}${relKey.slice(lastDot)}`;
+  const lastSlash = relKey.lastIndexOf("/");
+  const publicId = lastDot > lastSlash ? relKey.slice(0, lastDot) : relKey;
+  return `${publicId}_${hash}`;
 }
 
 export function buildCloudinaryDeliveryUrl(key: string, cloudName: string): string {

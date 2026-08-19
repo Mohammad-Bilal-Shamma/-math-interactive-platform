@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it } from "vitest";
-import { parseCloudinaryUrl, storagePut } from "./storage";
+import { parseCloudinaryUrl, storageGet, storagePut } from "./storage";
 
 const runIntegration = process.env.RUN_CLOUDINARY_INTEGRATION === "1";
 const describeCloudinaryIntegration = runIntegration ? describe : describe.skip;
@@ -37,8 +37,12 @@ describeCloudinaryIntegration("Cloudinary storage integration", () => {
     const pixel = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL2WAAAAABJRU5ErkJggg==", "base64");
     const uploaded = await storagePut(key, pixel, "image/png");
     uploadedKeys.push(uploaded.key);
+    const restored = await storageGet(uploaded.key);
+    const restoredResponse = await fetch(restored.url);
 
     expect(uploaded.key).toMatch(/^math-assistant\/healthcheck\//);
     expect(uploaded.url).toMatch(/^https:\/\/res\.cloudinary\.com\//);
+    expect(restoredResponse.ok).toBe(true);
+    expect(restoredResponse.headers.get("content-type")).toMatch(/^image\//);
   }, 30_000);
 });
