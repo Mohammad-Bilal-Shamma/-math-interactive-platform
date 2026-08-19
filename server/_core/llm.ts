@@ -455,7 +455,7 @@ type GeminiGenerateResponse = {
 };
 
 const invokeGemini = async (provider: LlmProviderConfig, params: InvokeParams): Promise<InvokeResult> => {
-  const model = (params.model || "gemini-2.0-flash").replace(/^models\//, "");
+  const model = (params.model || "gemini-3.6-flash").replace(/^models\//, "");
   const maxOutputTokens = params.max_tokens ?? params.maxTokens;
   const payload = await buildGeminiRequest(params.messages, maxOutputTokens);
   const response = await fetchWithBackoff(

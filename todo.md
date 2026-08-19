@@ -94,3 +94,4 @@
 - [x] Replace the OpenAI assistant adapter with a Gemini text-and-image adapter while preserving Arabic math guidance and stored conversation behavior.
 - [ ] Verify after deployment that Clerk-authenticated student lesson progress persists to Aiven MySQL.
 - [ ] Verify after deployment that the designated teacher can load and save protected teacher-dashboard data against Aiven MySQL.
+- [ ] Replace the retired Gemini 2.0 Flash model identifier with the currently available Gemini Flash model and revalidate the deployed assistant.

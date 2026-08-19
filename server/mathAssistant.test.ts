@@ -3,7 +3,7 @@ import { buildMathAssistantMessages, isOwnedMathAssistantImage, mathAssistantMod
 
 describe("math assistant safeguards", () => {
   it("uses a vision-capable external model for mathematical image questions", () => {
-    expect(mathAssistantModel).toBe("gemini-2.0-flash");
+    expect(mathAssistantModel).toBe("gemini-3.6-flash");
   });
 
   it("accepts only image keys within the authenticated student namespace", () => {
